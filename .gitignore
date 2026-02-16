@@ -1,0 +1,10 @@
+node_modules/
+server/node_modules/
+server/.env
+.env
+.env.local
+.vercel
+*.bak
+*.log
+.DS_Store
+Thumbs.db

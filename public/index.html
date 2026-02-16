@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EInk Smart Display</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='16' font-family='sans-serif' font-weight='bold'>E</text></svg>">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- AUTH SCREEN                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#3b82f6"/>
+          <path d="M14 16h20v2H14zm0 7h16v2H14zm0 7h12v2H14z" fill="white" opacity=".9"/>
+          <circle cx="38" cy="12" r="6" fill="#10b981"/>
+        </svg>
+      </div>
+      <h1>EInk Smart Display</h1>
+      <p class="auth-sub">AI-Powered E-Ink Display Controller</p>
+    </div>
+
+    <form id="auth-form" autocomplete="off">
+      <div class="form-group">
+        <label for="auth-email">Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="auth-password">Password</label>
+        <input type="password" id="auth-password" placeholder="Min 6 characters" required>
+      </div>
+      <div id="auth-error" class="auth-error"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="auth-submit">
+        <span id="auth-btn-text">Sign In</span>
+      </button>
+      <p class="auth-toggle">
+        <span id="auth-toggle-text">Don't have an account?</span>
+        <a href="#" id="auth-toggle-link">Sign Up</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- MAIN APP                                                               -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="app" class="app hidden">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">
+        <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#3b82f6"/>
+          <path d="M14 16h20v2H14zm0 7h16v2H14zm0 7h12v2H14z" fill="white" opacity=".9"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="nav-items">
+      <!-- Dashboard -->
+      <button class="nav-item active" data-page="dashboard" title="Dashboard">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+      </button>
+      <!-- Display -->
+      <button class="nav-item" data-page="display" title="Display">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <path d="M8 21h8M12 17v4"/>
+        </svg>
+      </button>
+      <!-- Settings -->
+      <button class="nav-item" data-page="settings" title="Settings">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="btn-logout" title="Sign Out">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Content ─────────────────────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- Header -->
+    <header class="content-header">
+      <div class="header-left">
+        <h1 id="page-title">Dashboard</h1>
+        <div class="header-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span id="header-clock">--:-- --</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="conn-pill" id="conn-bt" title="Bluetooth connection to ESP32" onclick="window.bleConnect()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/>
+          </svg>
+          <span id="conn-bt-text">BT</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ══ DASHBOARD PAGE ════════════════════════════════════════════════ -->
+    <section id="page-dashboard" class="page active">
+
+      <!-- Status Cards -->
+      <div class="status-grid">
+        <div class="status-card">
+          <div class="status-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/>
+            </svg>
+          </div>
+          <div class="status-label">BLUETOOTH</div>
+          <div class="status-value" id="dash-connection">Disconnected</div>
+        </div>
+        <div class="status-card">
+          <div class="status-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div class="status-label">DISPLAY MODE</div>
+          <div class="status-value" id="dash-mode">—</div>
+        </div>
+        <div class="status-card">
+          <div class="status-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="status-label">REFRESH</div>
+          <div class="status-value" id="dash-duration">—</div>
+        </div>
+        <div class="status-card">
+          <div class="status-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="status-label">VIEW TYPE</div>
+          <div class="status-value" id="dash-view">—</div>
+        </div>
+      </div>
+
+      <!-- Preview + Log Row -->
+      <div class="dash-row">
+        <div class="card flex-2">
+          <div class="card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <span>DISPLAY PREVIEW</span>
+          </div>
+          <div class="preview-wrapper">
+            <img id="dash-preview" src="" alt="No preview yet — generate a frame first">
+            <div class="preview-empty" id="dash-preview-empty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span>No preview yet</span>
+            </div>
+          </div>
+          <div class="preview-quote" id="dash-quote"></div>
+          <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="margin-top:12px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+            Refresh Preview
+          </button>
+        </div>
+
+        <div class="card flex-1">
+          <div class="card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
+            <span>ACTIVITY LOG</span>
+            <button class="log-clear" id="btn-clear-log" title="Clear log">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="log-entries" id="dash-log">
+            <div class="log-empty">No activity yet</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ DISPLAY PAGE ══════════════════════════════════════════════════ -->
+    <section id="page-display" class="page">
+
+      <!-- Display Mode -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+          <span>DISPLAY MODE</span>
+        </div>
+        <div class="mode-grid">
+          <div class="mode-card active" data-mode="0">
+            <div class="mode-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2a4 4 0 014 4c0 1.95-2 4-4 8-2-4-4-6.05-4-8a4 4 0 014-4z"/>
+                <circle cx="12" cy="18" r="4"/>
+                <path d="M12 14v0"/>
+              </svg>
+            </div>
+            <div class="mode-name">Full Auto</div>
+            <div class="mode-desc">AI generates both quote & image</div>
+            <div class="mode-badge auto">Auto-refresh</div>
+          </div>
+          <div class="mode-card" data-mode="1">
+            <div class="mode-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <div class="mode-name">Quote Custom</div>
+            <div class="mode-desc">Your quote, AI generates image</div>
+            <div class="mode-badge static">Static</div>
+          </div>
+          <div class="mode-card" data-mode="2">
+            <div class="mode-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 15l4-4a2 2 0 012.8 0L15 16"/>
+                <path d="M14 14l1-1a2 2 0 012.8 0L21 16"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+              </svg>
+            </div>
+            <div class="mode-name">Both Custom</div>
+            <div class="mode-desc">Your quote & your image from PC</div>
+            <div class="mode-badge static">Static</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Type -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>VIEW TYPE</span>
+        </div>
+        <div class="view-type-group">
+          <label class="radio-card active" data-view="both">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label">Both</div>
+              <div class="radio-desc">Image + Quote overlay</div>
+            </div>
+          </label>
+          <label class="radio-card" data-view="image">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label">Image Only</div>
+              <div class="radio-desc">Full-screen image</div>
+            </div>
+          </label>
+          <label class="radio-card" data-view="quote">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label">Quote Only</div>
+              <div class="radio-desc">Text rendered on display</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Custom Content (shown for modes 1 and 2) -->
+      <div class="card" id="custom-content-card" style="display:none">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <span>CUSTOM CONTENT</span>
+        </div>
+
+        <div class="form-group">
+          <label for="custom-quote">Custom Quote</label>
+          <textarea id="custom-quote" rows="3" placeholder="Enter your quote here... (max 75 chars)"></textarea>
+          <div class="input-hint"><span id="custom-quote-count">0</span>/75 characters</div>
+        </div>
+
+        <!-- Image upload (mode 2 only) -->
+        <div id="custom-image-section" style="display:none">
+          <div class="form-group">
+            <label>Custom Image</label>
+            <div class="upload-zone" id="upload-zone">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <span>Drop image here or click to browse</span>
+              <span class="upload-hint">296 × 128 recommended • PNG, JPG</span>
+              <input type="file" id="upload-input" accept="image/*" hidden>
+            </div>
+            <div class="upload-preview" id="upload-preview" style="display:none">
+              <img id="upload-img" src="" alt="Uploaded image">
+              <button class="btn-icon" id="upload-remove" title="Remove image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-save-content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <path d="M17 21v-8H7v8M7 3v5h8"/>
+          </svg>
+          Save & Apply
+        </button>
+      </div>
+    </section>
+
+    <!-- ══ SETTINGS PAGE ═════════════════════════════════════════════════ -->
+    <section id="page-settings" class="page">
+
+      <!-- Duration -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span>REFRESH DURATION</span>
+        </div>
+        <p class="card-desc">How often the display refreshes in Full Auto mode</p>
+        <div class="slider-row">
+          <span class="slider-label">Duration: <strong id="duration-val">60s</strong></span>
+        </div>
+        <div class="slider-wrapper">
+          <input type="range" id="duration-slider" min="10" max="600" value="60" step="5">
+          <div class="slider-labels">
+            <span>10s (fast)</span>
+            <span>600s (slow)</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-apply-duration" style="margin-top:12px">Apply</button>
+        <p class="card-hint">Only affects Full Auto mode. Other modes are static.</p>
+      </div>
+
+      <!-- AI Settings -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a4 4 0 014 4c0 1.95-2 4-4 8-2-4-4-6.05-4-8a4 4 0 014-4z"/>
+            <circle cx="12" cy="18" r="4"/>
+          </svg>
+          <span>AI SETTINGS</span>
+        </div>
+
+        <!-- Quote Types -->
+        <div class="form-group">
+          <label>Quote Types</label>
+          <p class="input-desc">Tags for the type of quotes AI should generate</p>
+          <div class="tag-input-wrapper">
+            <div class="tag-list" id="quote-type-tags"></div>
+            <div class="tag-input-row">
+              <input type="text" id="quote-type-input" placeholder="e.g. motivational, dark, romantic...">
+              <button class="btn btn-sm btn-outline" id="btn-add-quote-type">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Anime List -->
+        <div class="form-group">
+          <label>Anime / Source</label>
+          <p class="input-desc">Anime or shows the AI should pick quotes from</p>
+          <div class="tag-input-wrapper">
+            <div class="tag-list" id="anime-tags"></div>
+            <div class="tag-input-row">
+              <input type="text" id="anime-input" placeholder="e.g. Naruto, Death Note...">
+              <button class="btn btn-sm btn-outline" id="btn-add-anime">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature -->
+        <div class="form-group">
+          <label>AI Creativity</label>
+          <div class="slider-row">
+            <span class="slider-label">Temperature: <strong id="temp-val">1.0</strong></span>
+          </div>
+          <div class="slider-wrapper">
+            <input type="range" id="temp-slider" min="1" max="20" value="10" step="1">
+            <div class="slider-labels">
+              <span>Conservative</span>
+              <span>Creative</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Style -->
+        <div class="form-group">
+          <label for="image-style">Image Style</label>
+          <select id="image-style">
+            <option value="anime">Anime / Manga</option>
+            <option value="realistic">Realistic</option>
+            <option value="minimalist">Minimalist</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" id="btn-save-ai">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <path d="M17 21v-8H7v8M7 3v5h8"/>
+          </svg>
+          Save AI Settings
+        </button>
+      </div>
+
+      <!-- WiFi Setup -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/>
+          </svg>
+          <span>WIFI SETUP</span>
+        </div>
+        <p class="card-desc">WiFi credentials for your ESP32 device</p>
+        <div class="form-group">
+          <label for="wifi-ssid">SSID</label>
+          <input type="text" id="wifi-ssid" placeholder="Your WiFi network name">
+        </div>
+        <div class="form-group">
+          <label for="wifi-pass">Password</label>
+          <input type="password" id="wifi-pass" placeholder="WiFi password">
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-save-wifi">Save WiFi</button>
+      </div>
+
+      <!-- Device Key -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.78 7.78 5.5 5.5 0 017.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
+          <span>DEVICE KEY</span>
+        </div>
+        <p class="card-desc">Use this key in your ESP32 sketch to connect to the API</p>
+        <div class="key-display">
+          <code id="device-key-display">—</code>
+          <button class="btn-icon" id="btn-copy-key" title="Copy to clipboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btn-regen-key" style="margin-top:12px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          Regenerate Key
+        </button>
+      </div>
+
+      <!-- Account -->
+      <div class="card">
+        <div class="card-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>ACCOUNT</span>
+        </div>
+        <div class="account-info">
+          <div class="account-email" id="account-email">—</div>
+          <button class="btn btn-danger btn-sm" id="btn-logout-settings">Sign Out</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast-container" class="toast-container"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

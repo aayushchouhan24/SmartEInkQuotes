@@ -27,17 +27,6 @@ module.exports = async function handler(req, res) {
       email: email.toLowerCase().trim(),
       password: hashed,
       deviceKey: generateDeviceKey(),
-      settings: {
-        displayMode: 0,
-        viewType: 'both',
-        duration: 60,
-        aiSettings: {
-          quoteTypes: ['motivational', 'philosophical'],
-          animeList: ['Naruto', 'One Piece', 'Attack on Titan', 'Fullmetal Alchemist'],
-          temperature: 1.0,
-          imageStyle: 'anime',
-        },
-      },
     });
 
     const token = signToken(user._id);

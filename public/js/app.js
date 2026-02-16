@@ -161,17 +161,26 @@
           if ($('#wifi-ssid')) $('#wifi-ssid').value = ssidVal;
         }
         
-        // Auto-configure device if not set
-        if (!srvVal || srvVal === '(not set)' || srvVal === '') {
-          addLog('Device not configured — sending server URL + key...', 'info');
+        // Auto-configure device if not set OR if it contains localhost OR old format
+        const needsUpdate = !srvVal || 
+                           srvVal === '(not set)' || 
+                           srvVal === '' || 
+                           srvVal.includes('localhost') ||
+                           srvVal.includes('/api/frame') || // Old format with full URL
+                           !srvVal.includes('|') || // Missing pipe separator
+                           !srvVal.startsWith(API_BASE.split('://')[0]); // Wrong protocol/domain
+        
+        if (needsUpdate) {
+          addLog('Device needs reconfiguration — updating server URL...', 'info');
           const deviceKey = currentUser?.deviceKey || '';
           
           if (deviceKey) {
             // Write server URL + device key in format: "serverUrl|deviceKey"
             const combined = `${API_BASE}|${deviceKey}`;
             await bleSrvChar.writeValue(enc.encode(combined));
-            addLog('→ Server configured', '');
-            toast('Device auto-configured with server', 'success');
+            await bleSendCmd('SAVE');
+            addLog(`→ Server: ${API_BASE}`, '');
+            toast('Device reconfigured with current server', 'success');
           } else {
             addLog('Warning: No device key yet — loading settings...', 'error');
           }
@@ -180,6 +189,7 @@
         }
       } catch (e) {
         // Some characteristics may not be readable
+        console.error('BLE read error:', e);
       }
 
       // Subscribe to status notifications
@@ -845,6 +855,17 @@
       }
     });
 
+    // Clear all buttons
+    $('#btn-clear-quote-types')?.addEventListener('click', () => {
+      renderTags('quote-type-tags', []);
+      toast('Quote types cleared — remember to Save AI Settings', 'info');
+    });
+
+    $('#btn-clear-anime')?.addEventListener('click', () => {
+      renderTags('anime-tags', []);
+      toast('Anime list cleared — remember to Save AI Settings', 'info');
+    });
+
     // Save AI settings
     $('#btn-save-ai')?.addEventListener('click', async () => {
       const btn = $('#btn-save-ai');
@@ -999,6 +1020,9 @@
       } catch {
         logout();
       }
+    } else {
+      // No token - show auth screen immediately
+      $('#auth-screen').classList.remove('hidden');
     }
 
     // Periodic dashboard refresh (every 30 seconds)

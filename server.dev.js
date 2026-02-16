@@ -28,6 +28,7 @@ const routes = {
   '/api/quote':         require('./api/quote'),
   '/api/preview':       require('./api/preview'),
   '/api/upload':        require('./api/upload'),
+  '/api/test-ai':       require('./api/test-ai'),
 };
 
 for (const [route, handler] of Object.entries(routes)) {

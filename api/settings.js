@@ -34,11 +34,11 @@ module.exports = async function handler(req, res) {
     if (u.customImage !== undefined) set['settings.customImage'] = u.customImage;
 
     if (u.aiSettings) {
-      if (u.aiSettings.quoteTypes) set['settings.aiSettings.quoteTypes'] = u.aiSettings.quoteTypes;
-      if (u.aiSettings.animeList) set['settings.aiSettings.animeList'] = u.aiSettings.animeList;
+      if (u.aiSettings.quoteTypes !== undefined) set['settings.aiSettings.quoteTypes'] = u.aiSettings.quoteTypes;
+      if (u.aiSettings.animeList !== undefined) set['settings.aiSettings.animeList'] = u.aiSettings.animeList;
       if (u.aiSettings.temperature !== undefined)
         set['settings.aiSettings.temperature'] = u.aiSettings.temperature;
-      if (u.aiSettings.imageStyle) set['settings.aiSettings.imageStyle'] = u.aiSettings.imageStyle;
+      if (u.aiSettings.imageStyle !== undefined) set['settings.aiSettings.imageStyle'] = u.aiSettings.imageStyle;
     }
 
     if (u.wifi) {

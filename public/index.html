@@ -14,7 +14,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!-- AUTH SCREEN                                                            -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<div id="auth-screen" class="auth-screen">
+<div id="auth-screen" class="auth-screen hidden">
   <div class="auth-card">
     <div class="auth-header">
       <div class="auth-logo">
@@ -386,7 +386,10 @@
 
         <!-- Quote Types -->
         <div class="form-group">
-          <label>Quote Types</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+            <label style="margin:0;">Quote Types</label>
+            <button class="btn btn-sm btn-outline" id="btn-clear-quote-types" style="padding:4px 10px;font-size:10px;">Clear All</button>
+          </div>
           <p class="input-desc">Tags for the type of quotes AI should generate</p>
           <div class="tag-input-wrapper">
             <div class="tag-list" id="quote-type-tags"></div>
@@ -399,7 +402,10 @@
 
         <!-- Anime List -->
         <div class="form-group">
-          <label>Anime / Source</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+            <label style="margin:0;">Anime / Source</label>
+            <button class="btn btn-sm btn-outline" id="btn-clear-anime" style="padding:4px 10px;font-size:10px;">Clear All</button>
+          </div>
           <p class="input-desc">Anime or shows the AI should pick quotes from</p>
           <div class="tag-input-wrapper">
             <div class="tag-list" id="anime-tags"></div>

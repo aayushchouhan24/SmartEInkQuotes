@@ -4,7 +4,7 @@
   "description": "AI-powered E-Ink display controller — Vercel + MongoDB",
   "private": true,
   "scripts": {
-    "start": "node server.dev.js",
+    "start": "node server.js",
     "dev": "node server.dev.js",
     "vercel-dev": "vercel dev",
     "build": "echo 'No build step needed'"

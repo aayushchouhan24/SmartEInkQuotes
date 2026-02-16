@@ -18,5 +18,5 @@ services:
         sync: false
       - key: PIXAZO_API_KEY
         sync: false
-      - key: PUTER_TOKEN
+      - key: PUTER_AUTH_TOKEN
         sync: false

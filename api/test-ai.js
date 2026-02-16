@@ -51,6 +51,7 @@ module.exports = async function handler(req, res) {
   results.env = {
     scitelyKey: process.env.SCITELY_API_KEY ? 'SET' : 'MISSING',
     scitelyKeyBackup: process.env.SCITELY_API_KEY_BACKUP ? 'SET' : 'MISSING',
+    puterAuthToken: process.env.PUTER_AUTH_TOKEN ? 'SET' : 'MISSING',
     pixazoKey: process.env.PIXAZO_API_KEY ? 'SET' : 'MISSING',
     hasFetch: typeof globalThis.fetch === 'function',
     nodeVersion: process.version,

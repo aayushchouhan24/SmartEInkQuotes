@@ -50,7 +50,10 @@ module.exports = async function handler(req, res) {
   // Environment check
   results.env = {
     scitelyKey: process.env.SCITELY_API_KEY ? 'SET' : 'MISSING',
+    scitelyKeyBackup: process.env.SCITELY_API_KEY_BACKUP ? 'SET' : 'MISSING',
     pixazoKey: process.env.PIXAZO_API_KEY ? 'SET' : 'MISSING',
+    hasFetch: typeof globalThis.fetch === 'function',
+    nodeVersion: process.version,
   };
 
   res.json(results);

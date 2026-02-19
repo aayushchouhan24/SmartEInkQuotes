@@ -80,12 +80,11 @@ module.exports = async function handler(req, res) {
 
   // ── Environment summary ───────────────────────────────────────────────
   results.env = {
-    googleKey:       process.env.GOOGLE_API_KEY          ? 'SET' : 'MISSING',
-    scitelyKey:      process.env.SCITELY_API_KEY         ? 'SET' : 'MISSING',
-    scitelyBackup:   process.env.SCITELY_API_KEY_BACKUP  ? 'SET' : 'MISSING',
-    puterToken:      process.env.PUTER_AUTH_TOKEN         ? 'SET' : 'MISSING',
-    pixazoKey:       process.env.PIXAZO_API_KEY           ? 'SET' : 'MISSING',
-    nodeVersion:     process.version,
+    googleKey:     process.env.GOOGLE_API_KEY         ? 'SET' : 'MISSING',
+    scitelyKey:    process.env.SCITELY_API_KEY        ? 'SET' : 'MISSING',
+    scitelyBackup: process.env.SCITELY_API_KEY_BACKUP ? 'SET' : 'MISSING',
+    pixazoKey:     process.env.PIXAZO_API_KEY         ? 'SET' : 'MISSING',
+    nodeVersion:   process.version,
   };
 
   res.json(results);

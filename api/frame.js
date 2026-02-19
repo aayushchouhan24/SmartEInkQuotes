@@ -33,24 +33,18 @@ module.exports = async function handler(req, res) {
 
     // ── Mode 0: Full Auto (AI everything) ───────────────────────────────────
     if (displayMode === 0) {
-      console.log('[frame] Mode 0 - Full Auto, viewType:', viewType);
       if (viewType === 'quote') {
         quote = await generateQuote(settings.aiSettings);
-        console.log('[frame] Generated quote:', quote);
         bitmap = Buffer.from(await textToBitmap(quote));
       } else if (viewType === 'image') {
         const tempQuote = await generateQuote(settings.aiSettings);
-        console.log('[frame] Generated quote for image:', tempQuote);
         const scene = await generateScene(tempQuote);
-        console.log('[frame] Generated scene:', scene);
         const imgBuf = await generateImage(scene, settings.aiSettings?.imageStyle);
         bitmap = Buffer.from(await imageToBitmap(imgBuf));
       } else {
         // Both: quote + image
         quote = await generateQuote(settings.aiSettings);
-        console.log('[frame] Generated quote (both):', quote);
         const scene = await generateScene(quote);
-        console.log('[frame] Generated scene (both):', scene);
         try {
           const imgBuf = await generateImage(scene, settings.aiSettings?.imageStyle);
           bitmap = Buffer.from(await imageToBitmap(imgBuf));

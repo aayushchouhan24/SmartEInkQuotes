@@ -1,23 +1,16 @@
-/*
- * Production Server (Render / any Node host)
- * ────────────────────────────────────────────────
- * Serves public/ and routes /api/* to handlers.
- * Usage:  node server.js
- */
-
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 8787;
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── API Routes ──────────────────────────────────────────────────────────────
+// ── API Routes → Serverless handlers ────────────────────────────────────────
 
 const routes = {
   '/api/auth/login':    require('./api/auth/login'),
@@ -43,9 +36,9 @@ app.get('{*path}', (_req, res) => {
 
 // ── Start ───────────────────────────────────────────────────────────────────
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`\n  ══ EInk Smart Display ══`);
-  console.log(`  Port:   ${PORT}`);
+  console.log(`  Local:  http://localhost:${PORT}`);
   console.log(`  Env:    ${process.env.MONGODB_URI ? '✓ MongoDB' : '✗ MongoDB'}`);
-  console.log(`  Keys:   ${process.env.SCITELY_API_KEY ? '✓' : '✗'} Scitely | ${process.env.SCITELY_API_KEY_BACKUP ? '✓' : '✗'} Backup | ${process.env.PIXAZO_API_KEY ? '✓' : '✗'} Pixazo\n`);
+  console.log(`  Keys:   ${process.env.SCITELY_API_KEY ? '✓' : '✗'} Scitely | ${process.env.PIXAZO_API_KEY ? '✓' : '✗'} Pixazo\n`);
 });

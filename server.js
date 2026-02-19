@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const { getProviderStatus } = require('./lib/ai');
 
 const app = express();
 const PORT = process.env.PORT || 8787;
@@ -37,8 +38,26 @@ app.get('{*path}', (_req, res) => {
 // ── Start ───────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`\n  ══ EInk Smart Display ══`);
-  console.log(`  Local:  http://localhost:${PORT}`);
-  console.log(`  Env:    ${process.env.MONGODB_URI ? '✓ MongoDB' : '✗ MongoDB'}`);
-  console.log(`  Keys:   ${process.env.SCITELY_API_KEY ? '✓' : '✗'} Scitely | ${process.env.PIXAZO_API_KEY ? '✓' : '✗'} Pixazo\n`);
+  const status = getProviderStatus();
+  const tick = (ok) => (ok ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m');
+
+  console.log('');
+  console.log('  ╔══════════════════════════════════════════════╗');
+  console.log('  ║         EInk Smart Display  v2.0             ║');
+  console.log('  ╚══════════════════════════════════════════════╝');
+  console.log('');
+  console.log(`  Local:    http://localhost:${PORT}`);
+  console.log(`  MongoDB:  ${tick(!!process.env.MONGODB_URI)} ${process.env.MONGODB_URI ? 'Connected' : 'NOT SET'}`);
+  console.log('');
+  console.log('  ── Text AI Providers ──────────────────────────');
+  for (const p of status.text) {
+    console.log(`    ${tick(p.available)} ${p.name.padEnd(18)} ${p.available ? 'Ready' : `Missing ${p.envKey}`}`);
+  }
+  console.log('');
+  console.log('  ── Image AI Provider ─────────────────────────');
+  console.log(`    ${tick(status.image.available)} ${status.image.name.padEnd(18)} ${status.image.available ? 'Ready' : `Missing ${status.image.envKey}`}`);
+  console.log('');
+  console.log(`  Text AI:  ${status.textAvailable}/${status.text.length} providers available (fallback chain)`);
+  console.log(`  Image AI: ${status.image.available ? '1/1' : '0/1'} provider available`);
+  console.log('');
 });

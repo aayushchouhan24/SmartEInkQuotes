@@ -1,6 +1,6 @@
 const { connectDB, User } = require('../lib/db');
 const { authenticateDevice, cors } = require('../lib/auth');
-const { generateQuote, generateScene, generateImage } = require('../lib/ai');
+const { generateQuote, generateImagePrompt, generateImage } = require('../lib/ai');
 const { imageToBitmap, textToBitmap, base64ToBitmap, BITMAP_BYTES } = require('../lib/imaging');
 
 module.exports = async function handler(req, res) {
@@ -38,13 +38,13 @@ module.exports = async function handler(req, res) {
         bitmap = Buffer.from(await textToBitmap(quote));
       } else if (viewType === 'image') {
         const tempQuote = await generateQuote(settings.aiSettings);
-        const scene = await generateScene(tempQuote);
+        const scene = await generateImagePrompt(tempQuote);
         const imgBuf = await generateImage(scene, settings.aiSettings?.imageStyle);
         bitmap = Buffer.from(await imageToBitmap(imgBuf));
       } else {
         // Both: quote + image
         quote = await generateQuote(settings.aiSettings);
-        const scene = await generateScene(quote);
+        const scene = await generateImagePrompt(quote);
         try {
           const imgBuf = await generateImage(scene, settings.aiSettings?.imageStyle);
           bitmap = Buffer.from(await imageToBitmap(imgBuf));
@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
       if (viewType === 'quote') {
         bitmap = Buffer.from(await textToBitmap(quote));
       } else {
-        const scene = await generateScene(quote);
+        const scene = await generateImagePrompt(quote);
         try {
           const imgBuf = await generateImage(scene, settings.aiSettings?.imageStyle);
           bitmap = Buffer.from(await imageToBitmap(imgBuf));

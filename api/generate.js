@@ -10,6 +10,7 @@ const { connectDB, User } = require('../lib/db');
 const { authenticate, cors } = require('../lib/auth');
 const { generateQuote, generateImagePrompt, generateImage } = require('../lib/ai');
 const { imageToBitmap, textToBitmap, base64ToBitmap, bitmapToPng } = require('../lib/imaging');
+const { writeUserLog } = require('../lib/logs');
 
 module.exports = async function handler(req, res) {
   cors(res);
@@ -31,8 +32,13 @@ module.exports = async function handler(req, res) {
     let quote = '';
     let scenePrompt = '';
     let bitmap;
-    let quoteProvider = '';
-    let sceneProvider = '';
+    await writeUserLog(user._id, {
+      source: 'server',
+      level: 'info',
+      event: 'generate.start',
+      message: `Manual refresh started (mode=${displayMode}, view=${viewType})`,
+      meta: { displayMode, viewType },
+    });
 
     // ── Mode 0: Full Auto ─────────────────────────────────────────────────
     if (displayMode === 0) {
@@ -115,6 +121,20 @@ module.exports = async function handler(req, res) {
     const elapsed = Date.now() - t0;
     log.push({ step: 'done', detail: `Completed in ${elapsed}ms` });
 
+    await writeUserLog(user._id, {
+      source: 'server',
+      level: 'info',
+      event: 'generate.done',
+      message: `Manual refresh finished in ${elapsed}ms`,
+      meta: {
+        quote: quote || '',
+        scenePrompt: scenePrompt || '',
+        imageStyle: settings.aiSettings?.imageStyle || 'anime',
+        displayMode,
+        viewType,
+      },
+    });
+
     res.json({
       ok: true,
       quote,
@@ -130,6 +150,13 @@ module.exports = async function handler(req, res) {
     const elapsed = Date.now() - t0;
     log.push({ step: 'error', detail: err.message });
     console.error('[generate error]', err);
+    await writeUserLog(user._id, {
+      source: 'server',
+      level: 'error',
+      event: 'generate.error',
+      message: `Manual refresh failed: ${err.message}`,
+      meta: { elapsed },
+    });
     res.status(500).json({
       ok: false,
       error: err.message,

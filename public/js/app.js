@@ -22,6 +22,9 @@
   let settings = null;
   let isLogin = true;
   let logEntries = [];
+  let serverLogEntries = [];
+  let previewStamp = '';
+  let previewObjectUrl = '';
 
   // BLE State
   let bleDevice = null;
@@ -82,8 +85,13 @@
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('No preview');
-      return res.blob();
+      return {
+        blob: await res.blob(),
+        stamp: res.headers.get('x-preview-at') || '',
+      };
     },
+
+    getLogs: (limit = 150) => API.request(`/api/logs?limit=${limit}`),
 
     generate: async () => {
       const res = await fetch(`${API_BASE}/api/generate`, {
@@ -310,19 +318,54 @@
   function addLog(msg, type = '') {
     const now = new Date();
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    logEntries.unshift({ time, msg, type });
-    if (logEntries.length > 50) logEntries.pop();
+    logEntries.unshift({
+      id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      time,
+      msg,
+      type,
+      ts: now.getTime(),
+    });
+    if (logEntries.length > 120) logEntries.pop();
     renderLog();
+  }
+
+  async function loadServerLogs() {
+    try {
+      const data = await API.getLogs(180);
+      const items = Array.isArray(data.logs) ? data.logs : [];
+      serverLogEntries = items.map((entry) => {
+        const dt = new Date(entry.createdAt);
+        const time = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const type = entry.level === 'error' ? 'error' : 'info';
+        const sourceTag = entry.source ? `[${entry.source.toUpperCase()}] ` : '';
+        return {
+          id: entry.id,
+          time,
+          msg: `${sourceTag}${entry.message}`,
+          type,
+          ts: dt.getTime(),
+        };
+      });
+      renderLog();
+    } catch (err) {
+      addLog('Failed loading server logs: ' + err.message, 'error');
+    }
   }
 
   function renderLog() {
     const el = $('#dash-log');
     if (!el) return;
-    if (logEntries.length === 0) {
-      el.innerHTML = '<div class="log-empty">No activity yet</div>';
+
+    const merged = [...serverLogEntries, ...logEntries]
+      .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+      .slice(0, 120);
+
+    if (merged.length === 0) {
+      el.innerHTML = '<div class="log-empty">No logs yet</div>';
       return;
     }
-    el.innerHTML = logEntries
+
+    el.innerHTML = merged
       .map(
         (e) => {
           const iconCls = e.type === 'error' ? 'error' : e.type === 'info' ? 'info' : 'success';
@@ -445,8 +488,9 @@
     }
 
     // Clear log button
-    $('#btn-clear-log')?.addEventListener('click', () => {
+    $('#btn-clear-log')?.addEventListener('click', async () => {
       logEntries.length = 0;
+      await loadServerLogs();
       renderLog();
     });
   }
@@ -531,8 +575,9 @@
     // WiFi indicator
     updateWifiIndicator();
 
-    // Load preview
-    loadPreview();
+    // Load preview + account logs
+    loadPreview(false);
+    loadServerLogs();
   }
 
   function updateDashboard() {
@@ -592,17 +637,29 @@
     }
   }
 
-  async function loadPreview() {
+  async function loadPreview(autoSync = true) {
     try {
-      const blob = await API.getPreview();
+      const { blob, stamp } = await API.getPreview();
+      if (autoSync && stamp && previewStamp && stamp === previewStamp) {
+        return;
+      }
+
+      previewStamp = stamp || previewStamp;
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+      }
+
       const url = URL.createObjectURL(blob);
+      previewObjectUrl = url;
       const img = $('#dash-preview');
       img.src = url;
       img.onload = () => {
         $('#dash-preview-empty')?.classList.add('hidden');
       };
-    } catch {
-      // No preview available
+    } catch (err) {
+      if (err.message !== 'No preview') {
+        addLog('Preview sync failed: ' + err.message, 'error');
+      }
     }
 
     // Load last quote
@@ -960,62 +1017,39 @@
   // ═════════════════════════════════════════════════════════════════════════
 
   function setupDashboard() {
-    // ── Refresh Preview: generate full frame on server, show result ──────
+    // ── Refresh: force next frame + trigger device refresh ────────────────
     $('#btn-refresh-preview')?.addEventListener('click', async () => {
       const btn = $('#btn-refresh-preview');
       btn.disabled = true;
-      btn.innerHTML = '<div class="spinner"></div> Generating...';
+      btn.innerHTML = '<div class="spinner"></div> Refreshing...';
 
       try {
-        addLog('Generating new frame...', 'info');
-        const data = await API.generate();
+        await API.updateSettings({ forceRefresh: true });
+        addLog('Refresh forced for next frame fetch', 'info');
 
-        // Show the preview image directly from the returned base64
-        if (data.previewBase64) {
-          const img = $('#dash-preview');
-          img.src = data.previewBase64;
-          $('#dash-preview-empty')?.classList.add('hidden');
-        }
-
-        // Show quote
-        if (data.quote) {
-          $('#dash-quote').textContent = `"${data.quote}"`;
-        }
-
-        // Log generation details
-        if (data.log && data.log.length) {
-          data.log.forEach((entry) => {
-            const icon = entry.step === 'error' ? 'error' : entry.step === 'done' ? 'info' : '';
-            const label = entry.step.toUpperCase();
-            addLog(`[${label}] ${entry.detail}`, icon);
-          });
-        }
-
-        addLog(`Frame generated in ${data.elapsed}ms | Style: ${data.imageStyle} | Mode: ${data.displayMode}`, 'info');
-
-        // Also tell the device to refresh via BLE if connected
+        // Trigger immediate refresh if BLE is connected
         if (bleConnected) {
           await bleSendCmd('REFRESH');
           addLog('Sent REFRESH to device via BLE', 'info');
         }
 
-        toast('Preview generated!', 'success');
+        // Pull latest preview/logs shortly after refresh request
+        setTimeout(() => {
+          loadPreview(false);
+          loadServerLogs();
+        }, 1200);
+
+        toast('Refresh requested', 'success');
       } catch (err) {
-        const msg = err?.error || err?.message || 'Generation failed';
-        addLog('Generation error: ' + msg, 'error');
-        // Still show partial log if returned
-        if (err?.log) {
-          err.log.forEach((entry) => {
-            addLog(`[${entry.step.toUpperCase()}] ${entry.detail}`, entry.step === 'error' ? 'error' : '');
-          });
-        }
+        const msg = err?.error || err?.message || 'Refresh failed';
+        addLog('Refresh error: ' + msg, 'error');
         toast(msg, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M23 4v6h-6M1 20v-6h6"/>
           <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
-        </svg> Generate Preview`;
+        </svg> Refresh`;
       }
     });
 
@@ -1089,6 +1123,14 @@
         updateDashboard();
       }
     }, 30000);
+
+    // Periodic preview and logs sync (every 12 seconds when on dashboard)
+    setInterval(() => {
+      if (currentPage === 'dashboard' && settings) {
+        loadPreview(true); // Auto-sync with stamp check
+        loadServerLogs();  // Refresh server logs
+      }
+    }, 12000);
   }
 
   // Start

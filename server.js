@@ -22,6 +22,7 @@ const routes = {
   '/api/generate':      require('./api/generate'),
   '/api/quote':         require('./api/quote'),
   '/api/preview':       require('./api/preview'),
+  '/api/logs':          require('./api/logs'),
   '/api/upload':        require('./api/upload'),
   '/api/test-ai':       require('./api/test-ai'),
 };

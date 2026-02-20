@@ -14,13 +14,16 @@ module.exports = async function handler(req, res) {
   const full = await User.findById(user._id).select('lastFrame').lean();
 
   if (!full?.lastFrame?.bitmap) {
-    return res.status(404).json({ error: 'No preview available yet. Generate a frame first.' });
+    return res.status(404).json({ error: 'No preview available yet. Press Refresh first.' });
   }
 
   try {
     const png = await bitmapToPng(full.lastFrame.bitmap);
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'no-cache');
+    if (full.lastFrame.generatedAt) {
+      res.setHeader('X-Preview-At', new Date(full.lastFrame.generatedAt).toISOString());
+    }
     res.send(png);
   } catch (err) {
     console.error('[preview error]', err);

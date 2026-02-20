@@ -1,5 +1,6 @@
 const { connectDB, User } = require('../lib/db');
 const { authenticate, generateDeviceKey, cors } = require('../lib/auth');
+const { writeUserLog } = require('../lib/logs');
 
 module.exports = async function handler(req, res) {
   cors(res);
@@ -48,12 +49,27 @@ module.exports = async function handler(req, res) {
 
     if (u.regenerateKey) set.deviceKey = generateDeviceKey();
 
+    if (u.forceRefresh) {
+      set.needsRefresh = true;
+    }
+
     // Flag device for refresh
     set.needsRefresh = true;
 
     const updated = await User.findByIdAndUpdate(user._id, set, { new: true })
       .select('-password -lastFrame.bitmap')
       .lean();
+
+    await writeUserLog(user._id, {
+      source: 'server',
+      level: 'info',
+      event: u.forceRefresh ? 'refresh.forced' : 'settings.updated',
+      message: u.forceRefresh ? 'Refresh forced for next device fetch' : 'Settings updated',
+      meta: {
+        forceRefresh: !!u.forceRefresh,
+        changedKeys: Object.keys(set),
+      },
+    });
 
     return res.json({
       settings: updated.settings,

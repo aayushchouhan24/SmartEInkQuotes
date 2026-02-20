@@ -21,7 +21,7 @@ void loadCredentials()
     strlcpy(deviceKey,  prefs.getString(NVS_KEY,  "").c_str(), sizeof(deviceKey));
     prefs.end();
 
-    Serial.printf("[NVS] SSID='%s'  SRV='%s'  KEY='%.8s...'\n",
+    DBG_PRINTF("[NVS] SSID='%s'  SRV='%s'  KEY='%.8s...'\n",
                   wifiSsid, serverUrl, deviceKey);
 }
 
@@ -35,7 +35,7 @@ void saveCredentials()
     prefs.putString(NVS_SRV,  serverUrl);
     prefs.putString(NVS_KEY,  deviceKey);
     prefs.end();
-    Serial.println("[NVS] Credentials saved");
+    DBG_PRINTLN("[NVS] Credentials saved");
 }
 
 // ── Load cached frame (bitmap + quote + settings) from NVS ──────────────────
@@ -51,20 +51,20 @@ void loadCachedFrame()
         if (read != BMP_SZ)
         {
             hasCachedFrame = false;
-            Serial.printf("[NVS] Cached bitmap corrupt (%u/%u)\n", read, BMP_SZ);
+            DBG_PRINTF("[NVS] Cached bitmap corrupt (%u/%u)\n", read, BMP_SZ);
         }
         else
         {
             strlcpy(quoteBuf, prefs.getString(NVS_QUOTE, "").c_str(), sizeof(quoteBuf));
             displayMode     = prefs.getUChar(NVS_MODE, 0);
             refreshInterval = prefs.getULong(NVS_INTERVAL, 60000);
-            Serial.printf("[NVS] Cached frame loaded (mode=%u, interval=%lu)\n",
+            DBG_PRINTF("[NVS] Cached frame loaded (mode=%u, interval=%lu)\n",
                           displayMode, refreshInterval);
         }
     }
     else
     {
-        Serial.println("[NVS] No cached frame");
+        DBG_PRINTLN("[NVS] No cached frame");
     }
     prefs.end();
 }
@@ -82,5 +82,5 @@ void saveCachedFrame()
     prefs.end();
 
     hasCachedFrame = true;
-    Serial.println("[NVS] Frame cached");
+    DBG_PRINTLN("[NVS] Frame cached");
 }

@@ -4,19 +4,16 @@
  */
 
 #include "DisplayHelper.h"
+#include <SPI.h>
 
 // ── Hardware init ───────────────────────────────────────────────────────────
 
 void initDisplay()
 {
-    if (PWR_PIN >= 0)
-    {
-        pinMode(PWR_PIN, OUTPUT);
-        digitalWrite(PWR_PIN, HIGH);
-        delay(20);
-    }
+    // Explicit SPI pins so the same code works on C3, S3, and classic ESP32
+    SPI.begin(DISPLAY_CLK, -1 /* no MISO */, DISPLAY_DIN, DISPLAY_CS);
 
-    display.init();
+    display.init(115200);
     display.setRotation(1);
     display.setTextColor(GxEPD_BLACK);
     display.setFont(nullptr);
@@ -92,7 +89,7 @@ void showFrame()
     bool partial = (frameNum % FULL_REFRESH_EVERY != 0);
     display.display(partial);
     frameNum++;
-    Serial.printf("[DISP] Frame #%u rendered\n", frameNum);
+    DBG_PRINTF("[DISP] Frame #%u rendered\n", frameNum);
 }
 
 // ── First-boot / no config screen ───────────────────────────────────────────

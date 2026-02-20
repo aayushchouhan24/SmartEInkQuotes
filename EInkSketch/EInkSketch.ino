@@ -51,6 +51,7 @@ bool     hasCachedFrame  = false;
 bool     bleConnected      = false;
 bool     pendingRefresh    = false;
 bool     pendingWifiConnect = false;
+bool     pendingClear       = false;
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SETUP
@@ -58,10 +59,10 @@ bool     pendingWifiConnect = false;
 
 void setup()
 {
-    Serial.begin(115200);
+    DBG_BEGIN(115200);
     delay(100);
-    Serial.println("\n═══ EInk Smart Display v2.1 ═══");
-    Serial.println("    BLE + WiFi · Cached Boot\n");
+    DBG_PRINTLN("\n═══ EInk Smart Display v2.1 ═══");
+    DBG_PRINTLN("    BLE + WiFi · Cached Boot\n");
 
     // 1. Display hardware
     initDisplay();
@@ -76,7 +77,7 @@ void setup()
     // 4. If we have a cached frame → show it NOW (instant boot)
     if (hasCachedFrame)
     {
-        Serial.println("[BOOT] Showing cached frame");
+        DBG_PRINTLN("[BOOT] Showing cached frame");
         showFrame();
     }
 
@@ -122,16 +123,27 @@ void loop()
     if (pendingWifiConnect)
     {
         pendingWifiConnect = false;
-        Serial.println("[CMD] WiFi reconnect");
+        DBG_PRINTLN("[CMD] WiFi reconnect");
         wifiOk = connectWifi();
         notifyStatus();
+    }
+
+    // ── Handle BLE CLEAR command ────────────────────────────────────────────
+    if (pendingClear)
+    {
+        pendingClear = false;
+        DBG_PRINTLN("[CMD] Clear screen via BLE");
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
+        display.display(false);
+        DBG_PRINTLN("[DISP] Screen cleared");
     }
 
     // ── Handle BLE REFRESH command ──────────────────────────────────────────
     if (pendingRefresh)
     {
         pendingRefresh = false;
-        Serial.println("[CMD] Refresh via BLE");
+        DBG_PRINTLN("[CMD] Refresh via BLE");
 
         if (WiFi.status() != WL_CONNECTED)
             wifiOk = connectWifi();

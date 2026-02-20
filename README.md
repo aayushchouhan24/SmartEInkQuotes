@@ -23,7 +23,6 @@ An ESP32-powered 2.9" e-ink display that fetches AI-generated anime artwork and 
 | Display | Waveshare 2.9" e-ink (296×128), driver: GDEH029A1 / SSD1680 |
 | Wiring | CS→10, DC→13, RST→14, BUSY→4, PWR→5 |
 
-> Modify pin numbers in `eink.ino` if your wiring differs. Set `PWR_PIN = -1` if your display has no power control pin.
 
 ## Architecture
 

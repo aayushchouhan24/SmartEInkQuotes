@@ -44,7 +44,7 @@ void notifyStatus()
 
     pCharStat->setValue(s.c_str());
     pCharStat->notify();
-    Serial.printf("[BLE] Status → %s\n", s.c_str());
+    DBG_PRINTF("[BLE] Status \u2192 %s\n", s.c_str());
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -56,7 +56,7 @@ class ServerCB : public BLEServerCallbacks
     void onConnect(BLEServer *) override
     {
         bleConnected = true;
-        Serial.println("[BLE] Client connected");
+        DBG_PRINTLN("[BLE] Client connected");
         // Push current values so web app can read them
         pCharSsid->setValue(wifiSsid);
         pCharPass->setValue(wifiPass);
@@ -68,7 +68,7 @@ class ServerCB : public BLEServerCallbacks
     void onDisconnect(BLEServer *) override
     {
         bleConnected = false;
-        Serial.println("[BLE] Client disconnected — re-advertising");
+        DBG_PRINTLN("[BLE] Client disconnected \u2014 re-advertising");
         BLEDevice::startAdvertising();
     }
 };
@@ -83,12 +83,12 @@ class ConfigCB : public BLECharacteristicCallbacks
         if (uuid == CHAR_SSID_UUID)
         {
             strlcpy(wifiSsid, val.c_str(), sizeof(wifiSsid));
-            Serial.printf("[BLE] SSID → %s\n", wifiSsid);
+            DBG_PRINTF("[BLE] SSID → %s\n", wifiSsid);
         }
         else if (uuid == CHAR_PASS_UUID)
         {
             strlcpy(wifiPass, val.c_str(), sizeof(wifiPass));
-            Serial.println("[BLE] Password → ****");
+            DBG_PRINTLN("[BLE] Password → ****");
         }
         else if (uuid == CHAR_SRV_UUID)
         {
@@ -103,7 +103,7 @@ class ConfigCB : public BLECharacteristicCallbacks
             {
                 strlcpy(serverUrl, val.c_str(), sizeof(serverUrl));
             }
-            Serial.printf("[BLE] Server → %s  Key → %.8s...\n", serverUrl, deviceKey);
+            DBG_PRINTF("[BLE] Server → %s  Key → %.8s...\n", serverUrl, deviceKey);
         }
 
         saveCredentials();
@@ -117,12 +117,14 @@ class CmdCB : public BLECharacteristicCallbacks
     {
         String cmd = c->getValue().c_str();
         cmd.trim();
-        Serial.printf("[BLE] CMD: '%s'\n", cmd.c_str());
+        DBG_PRINTF("[BLE] CMD: '%s'\n", cmd.c_str());
 
         if (cmd == "REFRESH")
             pendingRefresh = true;
         else if (cmd == "CONNECT")
             pendingWifiConnect = true;
+        else if (cmd == "CLEAR")
+            pendingClear = true;
         else if (cmd == "STATUS")
             notifyStatus();
     }
@@ -177,5 +179,5 @@ void initBLE()
     adv->setMinPreferred(0x06);
     BLEDevice::startAdvertising();
 
-    Serial.printf("[BLE] Advertising as '%s'\n", BLE_NAME);
+    DBG_PRINTF("[BLE] Advertising as '%s'\n", BLE_NAME);
 }

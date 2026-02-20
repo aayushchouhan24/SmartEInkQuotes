@@ -19,6 +19,7 @@ const routes = {
   '/api/auth/me':       require('./api/auth/me'),
   '/api/settings':      require('./api/settings'),
   '/api/frame':         require('./api/frame'),
+  '/api/generate':      require('./api/generate'),
   '/api/quote':         require('./api/quote'),
   '/api/preview':       require('./api/preview'),
   '/api/upload':        require('./api/upload'),

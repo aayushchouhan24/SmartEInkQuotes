@@ -85,6 +85,19 @@
       return res.blob();
     },
 
+    generate: async () => {
+      const res = await fetch(`${API_BASE}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw data;
+      return data;
+    },
+
     uploadImage: (base64) =>
       API.request('/api/upload', { method: 'POST', body: { image: base64 } }),
 
@@ -947,40 +960,84 @@
   // ═════════════════════════════════════════════════════════════════════════
 
   function setupDashboard() {
+    // ── Refresh Preview: generate full frame on server, show result ──────
     $('#btn-refresh-preview')?.addEventListener('click', async () => {
       const btn = $('#btn-refresh-preview');
       btn.disabled = true;
-      btn.innerHTML =
-        '<div class="spinner"></div> Generating...';
+      btn.innerHTML = '<div class="spinner"></div> Generating...';
 
       try {
-        // Trigger a new quote to ensure content exists
-        const quote = await API.getQuote();
-        addLog('Generated: ' + quote, '');
+        addLog('Generating new frame...', 'info');
+        const data = await API.generate();
+
+        // Show the preview image directly from the returned base64
+        if (data.previewBase64) {
+          const img = $('#dash-preview');
+          img.src = data.previewBase64;
+          $('#dash-preview-empty')?.classList.add('hidden');
+        }
+
+        // Show quote
+        if (data.quote) {
+          $('#dash-quote').textContent = `"${data.quote}"`;
+        }
+
+        // Log generation details
+        if (data.log && data.log.length) {
+          data.log.forEach((entry) => {
+            const icon = entry.step === 'error' ? 'error' : entry.step === 'done' ? 'info' : '';
+            const label = entry.step.toUpperCase();
+            addLog(`[${label}] ${entry.detail}`, icon);
+          });
+        }
+
+        addLog(`Frame generated in ${data.elapsed}ms | Style: ${data.imageStyle} | Mode: ${data.displayMode}`, 'info');
 
         // Also tell the device to refresh via BLE if connected
         if (bleConnected) {
           await bleSendCmd('REFRESH');
+          addLog('Sent REFRESH to device via BLE', 'info');
         }
 
-        // Try to load preview
-        await new Promise((r) => setTimeout(r, 1000));
-        await loadPreview();
-
-        if (quote) {
-          $('#dash-quote').textContent = `"${quote}"`;
-        }
-
-        toast('Preview refreshed', 'success');
+        toast('Preview generated!', 'success');
       } catch (err) {
-        addLog('Preview error: ' + err.message, 'error');
-        toast(err.message, 'error');
+        const msg = err?.error || err?.message || 'Generation failed';
+        addLog('Generation error: ' + msg, 'error');
+        // Still show partial log if returned
+        if (err?.log) {
+          err.log.forEach((entry) => {
+            addLog(`[${entry.step.toUpperCase()}] ${entry.detail}`, entry.step === 'error' ? 'error' : '');
+          });
+        }
+        toast(msg, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M23 4v6h-6M1 20v-6h6"/>
           <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
-        </svg> Refresh Preview`;
+        </svg> Generate Preview`;
+      }
+    });
+
+    // ── Clear Screen: send blank frame to device ─────────────────────────
+    $('#btn-clear-screen')?.addEventListener('click', async () => {
+      const btn = $('#btn-clear-screen');
+      btn.disabled = true;
+
+      try {
+        if (bleConnected) {
+          await bleSendCmd('CLEAR');
+          addLog('Sent CLEAR command to device', 'info');
+          toast('Clear command sent to device', 'success');
+        } else {
+          toast('Connect via Bluetooth first to clear the screen', 'error');
+          addLog('Clear failed — no BLE connection', 'error');
+        }
+      } catch (err) {
+        addLog('Clear error: ' + err.message, 'error');
+        toast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
       }
     });
   }

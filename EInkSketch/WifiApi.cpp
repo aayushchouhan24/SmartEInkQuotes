@@ -19,11 +19,11 @@ bool connectWifi()
 {
     if (strlen(wifiSsid) == 0)
     {
-        Serial.println("[WiFi] No SSID — configure via BLE");
+        DBG_PRINTLN("[WiFi] No SSID — configure via BLE");
         return false;
     }
 
-    Serial.printf("[WiFi] Connecting to '%s'...\n", wifiSsid);
+    DBG_PRINTF("[WiFi] Connecting to '%s'...\n", wifiSsid);
     WiFi.mode(WIFI_STA);
     WiFi.begin(wifiSsid, wifiPass);
 
@@ -31,15 +31,15 @@ bool connectWifi()
     while (WiFi.status() != WL_CONNECTED && millis() - t < WIFI_TIMEOUT_MS)
     {
         delay(250);
-        Serial.print(".");
+        DBG_PRINT(".");
     }
-    Serial.println();
+    DBG_PRINTLN();
 
     wifiOk = (WiFi.status() == WL_CONNECTED);
     if (wifiOk)
-        Serial.printf("[WiFi] OK — %s\n", WiFi.localIP().toString().c_str());
+        DBG_PRINTF("[WiFi] OK — %s\n", WiFi.localIP().toString().c_str());
     else
-        Serial.println("[WiFi] Failed");
+        DBG_PRINTLN("[WiFi] Failed");
 
     return wifiOk;
 }
@@ -60,17 +60,17 @@ bool fetchFrame()
 {
     if (strlen(serverUrl) == 0 || strlen(deviceKey) == 0)
     {
-        Serial.println("[API] No server/key — configure via BLE");
+        DBG_PRINTLN("[API] No server/key \u2014 configure via BLE");
         return false;
     }
 
     String url = String(serverUrl) + "/api/frame?key=" + deviceKey;
-    Serial.printf("[API] GET %s\n", url.c_str());
+    DBG_PRINTF("[API] GET %s\n", url.c_str());
 
     HTTPClient http;
     if (!http.begin(url))
     {
-        Serial.println("[API] begin() failed");
+        DBG_PRINTLN("[API] begin() failed");
         return false;
     }
 
@@ -82,7 +82,7 @@ bool fetchFrame()
     int code = http.GET();
     if (code != 200)
     {
-        Serial.printf("[API] HTTP %d\n", code);
+        DBG_PRINTF("[API] HTTP %d\n", code);
         http.end();
         return false;
     }
@@ -112,7 +112,7 @@ bool fetchFrame()
 
     if (n != BMP_SZ)
     {
-        Serial.printf("[API] Bitmap short: %u/%u\n", n, BMP_SZ);
+        DBG_PRINTF("[API] Bitmap short: %u/%u\n", n, BMP_SZ);
         http.end();
         return false;
     }
@@ -136,7 +136,7 @@ bool fetchFrame()
     quoteBuf[q] = '\0';
 
     http.end();
-    Serial.printf("[API] OK: %u bmp + %u quote  mode=%u  int=%lu\n",
+    DBG_PRINTF("[API] OK: %u bmp + %u quote  mode=%u  int=%lu\n",
                   n, q, displayMode, refreshInterval);
 
     // ── Cache to NVS so next boot shows instantly ───────────────────────────

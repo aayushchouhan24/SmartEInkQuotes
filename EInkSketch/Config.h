@@ -8,15 +8,31 @@
 #include <WiFi.h>
 #include <GxEPD2_BW.h>
 
+// ── Debug logging — comment out to strip all Serial output from flash ────────
+// #define DEBUG
+
+#ifdef DEBUG
+  #define DBG_PRINT(x)       Serial.print(x)
+  #define DBG_PRINTLN(x)     Serial.println(x)
+  #define DBG_PRINTF(fmt,...) Serial.printf(fmt, ##__VA_ARGS__)
+  #define DBG_BEGIN(baud)    Serial.begin(baud)
+#else
+  #define DBG_PRINT(x)
+  #define DBG_PRINTLN(x)
+  #define DBG_PRINTF(fmt,...)
+  #define DBG_BEGIN(baud)
+#endif
+
 // ══════════════════════════════════════════════════════════════════════════════
-// HARDWARE
+// HARDWARE — GPIO 2-7 only (exist on every ESP32: C3 Super Mini, S3, classic)
 // ══════════════════════════════════════════════════════════════════════════════
 
-#define PWR_PIN       5      // E-ink power pin (-1 if unused)
-#define DISPLAY_CS    10
-#define DISPLAY_DC    13
-#define DISPLAY_RST   14
-#define DISPLAY_BUSY  4
+#define DISPLAY_CLK   2   // SPI Clock  → display CLK
+#define DISPLAY_DIN   3   // SPI MOSI   → display DIN
+#define DISPLAY_CS    4   // Chip Select
+#define DISPLAY_DC    5   // Data / Command
+#define DISPLAY_RST   6   // Reset
+#define DISPLAY_BUSY  7   // Busy signal
 
 constexpr uint16_t DISP_W  = 296;
 constexpr uint16_t DISP_H  = 128;
@@ -89,3 +105,4 @@ extern bool     hasCachedFrame;
 extern bool bleConnected;
 extern bool pendingRefresh;
 extern bool pendingWifiConnect;
+extern bool pendingClear;
